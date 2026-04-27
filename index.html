@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#0a0f1e"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="FieldScript"/>
+<link rel="manifest" href="manifest.json"/>
+<title>FieldScript – Totalplay</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{
+    min-height:100vh;
+    background:#0a0f1e;
+    font-family:'Courier New',monospace;
+    color:#e0e6ff;
+    overscroll-behavior:none;
+  }
+  .header{
+    background:linear-gradient(135deg,#1a237e 0%,#0d47a1 50%,#01579b 100%);
+    padding:20px 16px 14px;
+    border-bottom:2px solid #00e5ff;
+    box-shadow:0 4px 20px rgba(0,229,255,0.3);
+    position:sticky;top:0;z-index:100;
+  }
+  .header-sub{font-size:10px;color:#00e5ff;letter-spacing:3px;margin-bottom:4px;}
+  .header-title{font-size:20px;font-weight:bold;letter-spacing:1px;}
+  .header-tech{font-size:10px;color:#90caf9;margin-top:4px;}
+  .steps{
+    display:flex;padding:10px 16px;gap:6px;
+    background:#0d1b2a;border-bottom:1px solid #111d33;
+  }
+  .step-pill{
+    flex:1;text-align:center;font-size:10px;letter-spacing:1px;
+    padding:6px 0;border-radius:4px;transition:all .3s;font-family:'Courier New',monospace;
+  }
+  .step-active{background:#00e5ff;color:#000;font-weight:bold;}
+  .step-done{background:#1565c0;color:#90caf9;}
+  .step-inactive{background:#1a2744;color:#3a5080;}
+  .page{padding:16px;display:none;}
+  .page.active{display:block;}
+  .section-label{
+    font-size:11px;color:#00e5ff;letter-spacing:2px;margin-bottom:14px;
+  }
+  .order-btn{
+    width:100%;background:#0d1b2a;
+    border:1px solid #1a2744;border-radius:8px;
+    padding:14px 16px;color:#e0e6ff;font-size:14px;
+    text-align:left;cursor:pointer;letter-spacing:.5px;
+    transition:all .2s;margin-bottom:10px;
+    font-family:'Courier New',monospace;
+  }
+  .order-btn:active{background:linear-gradient(90deg,#1565c0,#0288d1);border-color:#00e5ff;}
+  .upload-area{
+    border:2px dashed #1a2744;border-radius:12px;
+    padding:30px 16px;text-align:center;cursor:pointer;
+    background:#0d1b2a;margin-bottom:10px;
+    transition:border-color .2s;
+  }
+  .upload-area:active{border-color:#00e5ff;}
+  .upload-icon{font-size:36px;margin-bottom:8px;}
+  .upload-txt{font-size:13px;color:#90caf9;}
+  .upload-sub{font-size:11px;color:#3a5080;margin-top:4px;}
+  .cam-btn{
+    width:100%;padding:12px;margin-bottom:12px;
+    background:#0d1b2a;border:1px solid #1565c0;
+    border-radius:8px;color:#90caf9;font-size:13px;
+    cursor:pointer;letter-spacing:1px;font-family:'Courier New',monospace;
+  }
+  .preview-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .preview-wrap{position:relative;}
+  .preview-img{width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #1565c0;}
+  .preview-del{
+    position:absolute;top:-6px;right:-6px;
+    background:#f44336;border:none;border-radius:50%;
+    width:20px;height:20px;cursor:pointer;color:white;
+    font-size:14px;line-height:20px;padding:0;display:flex;
+    align-items:center;justify-content:center;
+  }
+  .error-box{
+    color:#f44336;font-size:12px;margin-bottom:12px;
+    padding:10px;background:#1a0a0a;border-radius:6px;
+    border-left:3px solid #f44336;
+  }
+  .btn-primary{
+    width:100%;padding:16px;
+    background:linear-gradient(135deg,#1565c0,#00e5ff);
+    border:none;border-radius:10px;color:#000;
+    font-size:15px;font-weight:bold;cursor:pointer;
+    letter-spacing:2px;font-family:'Courier New',monospace;
+    box-shadow:0 0 20px rgba(0,229,255,0.4);
+    transition:all .3s;
+  }
+  .btn-primary:disabled{
+    background:#1a2744;color:#3a5080;
+    box-shadow:none;cursor:not-allowed;
+  }
+  .btn-whatsapp{
+    width:100%;padding:16px;
+    background:linear-gradient(135deg,#1b5e20,#2e7d32);
+    border:none;border-radius:10px;color:#fff;
+    font-size:15px;font-weight:bold;cursor:pointer;
+    letter-spacing:1px;font-family:'Courier New',monospace;
+    box-shadow:0 0 20px rgba(46,125,50,0.4);
+    margin-bottom:10px;
+  }
+  .btn-copy{
+    width:100%;padding:12px;
+    background:#0d1b2a;border:1px solid #1565c0;
+    border-radius:10px;color:#90caf9;
+    font-size:13px;cursor:pointer;
+    font-family:'Courier New',monospace;letter-spacing:1px;
+    margin-bottom:10px;
+  }
+  .btn-reset{
+    width:100%;padding:12px;
+    background:none;border:1px solid #1a2744;
+    border-radius:10px;color:#3a5080;
+    font-size:13px;cursor:pointer;
+    font-family:'Courier New',monospace;letter-spacing:1px;
+  }
+  .btn-back{
+    background:none;border:1px solid #1a2744;border-radius:4px;
+    color:#90caf9;padding:4px 10px;cursor:pointer;font-size:12px;
+    font-family:'Courier New',monospace;margin-right:8px;
+  }
+  .row-title{display:flex;align-items:center;margin-bottom:16px;}
+  .script-box{
+    background:#0d1b2a;border:1px solid #1565c0;
+    border-radius:10px;padding:16px;margin-bottom:16px;
+    font-size:13px;line-height:1.7;white-space:pre-wrap;
+    word-break:break-word;
+    box-shadow:0 0 20px rgba(21,101,192,0.2);
+    min-height:200px;
+  }
+  .preview-count{font-size:11px;color:#00e5ff;letter-spacing:2px;margin-bottom:8px;}
+  .loading-bar{
+    width:100%;height:3px;background:#1a2744;
+    border-radius:2px;margin-bottom:12px;overflow:hidden;
+  }
+  .loading-fill{
+    height:100%;background:linear-gradient(90deg,#1565c0,#00e5ff);
+    border-radius:2px;animation:load 1.5s infinite;
+    width:60%;
+  }
+  @keyframes load{
+    0%{transform:translateX(-100%);}
+    100%{transform:translateX(250%);}
+  }
+  .footer{
+    text-align:center;padding:20px 16px;
+    color:#1a2744;font-size:10px;letter-spacing:2px;
+    border-top:1px solid #0d1b2a;margin-top:20px;
+  }
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:#1565c0;color:#fff;padding:10px 20px;
+    border-radius:20px;font-size:12px;letter-spacing:1px;
+    opacity:0;transition:opacity .3s;pointer-events:none;
+    font-family:'Courier New',monospace;
+    box-shadow:0 4px 20px rgba(0,0,0,0.4);
+    z-index:999;white-space:nowrap;
+  }
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-sub">TOTALPLAY • FIELD CLOUD</div>
+  <div class="header-title">⚡ SCRIPT GENERATOR</div>
+  <div class="header-tech">TEC. MARIO ISMAEL TEUTLI MARCELINO • MEGE3PUET0498</div>
+</div>
+
+<div class="steps">
+  <div class="step-pill step-active" id="s1">1. TIPO</div>
+  <div class="step-pill step-inactive" id="s2">2. FOTOS</div>
+  <div class="step-pill step-inactive" id="s3">3. SCRIPT</div>
+</div>
+
+<!-- PAGE 1: Tipo -->
+<div class="page active" id="p1">
+  <div class="section-label">SELECCIONA EL TIPO DE ORDEN</div>
+  <button class="order-btn" onclick="selectType('migracion')">🔧 Migración de Acometida</button>
+  <button class="order-btn" onclick="selectType('instalacion')">📦 Instalación Finalizada</button>
+  <button class="order-btn" onclick="selectType('soporte')">🛠️ Soporte Técnico</button>
+  <button class="order-btn" onclick="selectType('recoleccion')">📤 Recolección</button>
+  <button class="order-btn" onclick="selectType('cambio_domicilio')">🏠 Cambio de Domicilio</button>
+  <button class="order-btn" onclick="selectType('mantenimiento')">⚙️ Mantenimiento Mayor</button>
+</div>
+
+<!-- PAGE 2: Fotos -->
+<div class="page" id="p2">
+  <div class="row-title">
+    <button class="btn-back" onclick="goStep(1)">← Atrás</button>
+    <div class="section-label" style="margin:0" id="type-label">TIPO</div>
+  </div>
+  <div class="section-label">SUBE LAS CAPTURAS DE FIELD CLOUD</div>
+
+  <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+    <div class="upload-icon">📁</div>
+    <div class="upload-txt">Toca para seleccionar imágenes</div>
+    <div class="upload-sub">Puedes subir varias a la vez</div>
+  </div>
+  <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="addFiles(this.files)"/>
+
+  <button class="cam-btn" onclick="document.getElementById('camInput').click()">📷 TOMAR FOTO</button>
+  <input type="file" id="camInput" accept="image/*" capture="environment" multiple style="display:none" onchange="addFiles(this.files)"/>
+
+  <div id="previewCount" class="preview-count" style="display:none"></div>
+  <div class="preview-grid" id="previewGrid"></div>
+
+  <div class="error-box" id="errorBox" style="display:none"></div>
+
+  <div class="loading-bar" id="loadingBar" style="display:none">
+    <div class="loading-fill"></div>
+  </div>
+
+  <button class="btn-primary" id="genBtn" onclick="generateScript()" disabled>⚡ GENERAR SCRIPT</button>
+</div>
+
+<!-- PAGE 3: Script -->
+<div class="page" id="p3">
+  <div class="row-title">
+    <button class="btn-back" onclick="goStep(2)">← Editar</button>
+    <div class="section-label" style="margin:0">SCRIPT GENERADO</div>
+  </div>
+  <div class="script-box" id="scriptBox"></div>
+  <button class="btn-whatsapp" onclick="sendWhatsApp()">📲 ENVIAR A WHATSAPP</button>
+  <button class="btn-copy" onclick="copyScript()">📋 COPIAR SCRIPT</button>
+  <button class="btn-reset" onclick="reset()">🔄 NUEVA ORDEN</button>
+</div>
+
+<div class="footer">TOTALPLAY • PLANTA EXTERNA • MEGE3PUET0498</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const PROMPTS = {
+  migracion:`Eres un asistente técnico de Totalplay. Analiza estas capturas de Field Cloud y extrae TODOS los datos para generar un script de MIGRACIÓN DE ACOMETIDA con este formato exacto:
+
+🔧 *SCRIPT MIGRACIÓN DE ACOMETIDA* 🔧
+
+━━━━━━━━━━━━━━━━━━━━━━
+📋 CUENTA A MIGRAR: [número de cuenta]
+
+👤 CLIENTE: [nombre del cliente]
+🏠 DIRECCION: [dirección completa]
+
+📍 UBI DEL DOM: [coordenadas del domicilio]
+
+━━━━━━━━━━━━━━━━━━━━━━
+📦 SP ORIGEN: [splitter origen y capacidad]
+📍 UBI DEL SP: [coordenadas SP origen]
+🔌 PUERTO: [puerto]
+🔒 CANDADO: [número o PENDIENTE]
+
+━━━━━━━━━━━━━━━━━━━━━━
+✅ SE MIGRA A: [splitter destino y capacidad]
+📍 UBI DEL SP: [coordenadas SP destino]
+🔌 PUERTO: [puerto o PENDIENTE]
+🔒 CANDADO: [número o PENDIENTE]
+━━━━━━━━━━━━━━━━━━━━━━
+
+📡 POTENCIA ÓPTICA: [valor dBm si visible]
+📋 ID INCIDENTE: [ID si visible]
+✅ ORDEN FINALIZADA: [hora si visible]
+
+━━━━━━━━━━━━━━━━━━━━━━
+👨‍🔧 TEC. MARIO ISMAEL TEUTLI MARCELINO
+🪪 ID: MEGE3PUET0498
+━━━━━━━━━━━━━━━━━━━━━━
+
+Si un dato no está visible escribe ⚠️ PENDIENTE. Solo devuelve el script, sin explicaciones.`,
+
+  instalacion:`Eres un asistente técnico de Totalplay. Analiza estas capturas de Field Cloud y genera un script de INSTALACIÓN FINALIZADA:
+
+📦 *INSTALACIÓN FINALIZADA* 📦
+
+━━━━━━━━━━━━━━━━━━━━━━
+📋 OS: [número de orden]
+👤 CLIENTE: [nombre]
+🏠 DIRECCIÓN: [dirección completa]
+📍 UBI: [coordenadas]
+
+━━━━━━━━━━━━━━━━━━━━━━
+📡 EQUIPO INSTALADO
+🔹 ONT: [modelo y serial]
+🔹 STB: [modelo y serial si aplica]
+🔹 MAC ONT: [MAC]
+
+━━━━━━━━━━━━━━━━━━━━━━
+🌿 PLANTA EXTERNA
+📦 SP: [splitter] (1X[capacidad])
+📍 UBI SP: [coordenadas]
+🔌 PUERTO: [número]
+🔒 CANDADO: [número]
+
+━━━━━━━━━━━━━━━━━━━━━━
+📡 POTENCIA ÓPTICA: [dBm]
+✅ CLIENTE SATISFECHO ✅
+
+━━━━━━━━━━━━━━━━━━━━━━
+👨‍🔧 TEC. MARIO ISMAEL TEUTLI MARCELINO
+🪪 ID: MEGE3PUET0498
+━━━━━━━━━━━━━━━━━━━━━━
+
+Si un dato no está visible escribe ⚠️ PENDIENTE. Solo devuelve el script.`,
+
+  soporte:`Eres un asistente técnico de Totalplay. Analiza estas capturas de Field Cloud y genera un script de SOPORTE TÉCNICO:
+
+🛠️ *SOPORTE TÉCNICO* 🛠️
+
+━━━━━━━━━━━━━━━━━━━━━━
+📋 OS: [número de orden]
+👤 CLIENTE: [nombre]
+🏠 DIRECCIÓN: [dirección]
+📍 UBI: [coordenadas]
+📞 CTA: [número de cuenta]
+
+━━━━━━━━━━━━━━━━━━━━━━
+🔍 DIAGNÓSTICO
+🔹 Falla reportada: [descripción]
+🔹 Causa raíz: [causa]
+
+━━━━━━━━━━━━━━━━━━━━━━
+🔧 SOLUCIÓN APLICADA
+[descripción de lo realizado]
+
+━━━━━━━━━━━━━━━━━━━━━━
+📡 POTENCIA ÓPTICA
+🔹 Antes: [dBm]
+🔹 Después: [dBm]
+
+✅ CLIENTE SATISFECHO ✅
+
+━━━━━━━━━━━━━━━━━━━━━━
+👨‍🔧 TEC. MARIO ISMAEL TEUTLI MARCELINO
+🪪 ID: MEGE3PUET0498
+━━━━━━━━━━━━━━━━━━━━━━
+
+Si un dato no está visible escribe ⚠️ PENDIENTE. Solo devuelve el script.`,
+
+  recoleccion:`Eres un asistente técnico de Totalplay. Analiza estas capturas de Field Cloud y genera un script de RECOLECCIÓN:
+
+📤 *RECOLECCIÓN DE EQUIPO* 📤
+
+━━━━━━━━━━━━━━━━━━━━━━
+📋 OS: [número de orden]
+👤 CLIENTE: [nombre]
+🏠 DIRECCIÓN: [dirección]
+📞 CTA: [número de cuenta]
+
+━━━━━━━━━━━━━━━━━━━━━━
+📦 EQUIPO RECOLECTADO
+🔹 ONT: [modelo] | Serial: [serial]
+🔹 STB: [modelo] | Serial: [serial si aplica]
+🔹 Control: [cantidad si aplica]
+🔹 Cable de poder: [sí/no]
+
+━━━━━━━━━━━━━━━━━━━━━━
+🔒 ESTADO DEL EQUIPO: [bueno/dañado/incompleto]
+📍 UBI: [coordenadas]
+
+━━━━━━━━━━━━━━━━━━━━━━
+👨‍🔧 TEC. MARIO ISMAEL TEUTLI MARCELINO
+🪪 ID: MEGE3PUET0498
+━━━━━━━━━━━━━━━━━━━━━━
+
+Si un dato no está visible escribe ⚠️ PENDIENTE. Solo devuelve el script.`,
+
+  cambio_domicilio:`Eres un asistente técnico de Totalplay. Analiza estas capturas de Field Cloud y genera un script de CAMBIO DE DOMICILIO:
+
+🏠 *CAMBIO DE DOMICILIO* 🏠
+
+━━━━━━━━━━━━━━━━━━━━━━
+📋 OS: [número de orden]
+👤 CLIENTE: [nombre]
+📞 CTA: [número de cuenta]
+
+━━━━━━━━━━━━━━━━━━━━━━
+📍 DOMICILIO ANTERIOR
+🏠 [dirección anterior]
+
+📍 DOMICILIO NUEVO
+🏠 [dirección nueva]
+📍 UBI: [coordenadas]
+
+━━━━━━━━━━━━━━━━━━━━━━
+📡 EQUIPO
+🔹 ONT: [modelo y serial]
+🔹 MAC: [MAC address]
+
+🌿 PLANTA EXTERNA
+📦 SP: [splitter] (1X[capacidad])
+📍 UBI SP: [coordenadas]
+🔌 PUERTO: [número]
+🔒 CANDADO: [número]
+
+━━━━━━━━━━━━━━━━━━━━━━
+📡 POTENCIA ÓPTICA: [dBm]
+✅ CLIENTE SATISFECHO ✅
+
+━━━━━━━━━━━━━━━━━━━━━━
+👨‍🔧 TEC. MARIO ISMAEL TEUTLI MARCELINO
+🪪 ID: MEGE3PUET0498
+━━━━━━━━━━━━━━━━━━━━━━
+
+Si un dato no está visible escribe ⚠️ PENDIENTE. Solo devuelve el script.`,
+
+  mantenimiento:`Eres un asistente técnico de Totalplay. Analiza estas capturas de Field Cloud y genera un script de MANTENIMIENTO MAYOR:
+
+⚙️ *MANTENIMIENTO MAYOR* ⚙️
+
+━━━━━━━━━━━━━━━━━━━━━━
+📋 OT: [número de orden]
+📍 ZONA/POLÍGONO: [zona o descripción]
+📍 UBI: [coordenadas]
+
+━━━━━━━━━━━━━━━━━━━━━━
+🔧 TRABAJOS REALIZADOS
+[descripción de actividades]
+
+━━━━━━━━━━━━━━━━━━━━━━
+📦 SPLITTERS INTERVENIDOS
+🔹 SP: [nombre] | Puertos activos: [n]/[total]
+🔹 Potencia entrada: [dBm]
+🔹 Potencia salida: [dBm]
+
+━━━━━━━━━━━━━━━━━━━━━━
+📋 ID INCIDENTE: [ID si aplica]
+✅ ORDEN FINALIZADA: [hora]
+
+━━━━━━━━━━━━━━━━━━━━━━
+👨‍🔧 TEC. MARIO ISMAEL TEUTLI MARCELINO
+🪪 ID: MEGE3PUET0498
+━━━━━━━━━━━━━━━━━━━━━━
+
+Si un dato no está visible escribe ⚠️ PENDIENTE. Solo devuelve el script.`,
+};
+
+const TYPE_LABELS = {
+  migracion:'🔧 MIGRACIÓN DE ACOMETIDA',
+  instalacion:'📦 INSTALACIÓN FINALIZADA',
+  soporte:'🛠️ SOPORTE TÉCNICO',
+  recoleccion:'📤 RECOLECCIÓN',
+  cambio_domicilio:'🏠 CAMBIO DE DOMICILIO',
+  mantenimiento:'⚙️ MANTENIMIENTO MAYOR',
+};
+
+let currentType = null;
+let images = [];
+let currentScript = '';
+
+function goStep(n){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('p'+n).classList.add('active');
+  ['s1','s2','s3'].forEach((s,i)=>{
+    const el = document.getElementById(s);
+    el.className = 'step-pill ' + (i+1===n?'step-active':i+1<n?'step-done':'step-inactive');
+  });
+  window.scrollTo(0,0);
+}
+
+function selectType(type){
+  currentType = type;
+  document.getElementById('type-label').textContent = TYPE_LABELS[type];
+  goStep(2);
+}
+
+function addFiles(files){
+  Array.from(files).forEach(f=>{
+    const url = URL.createObjectURL(f);
+    images.push({file:f,url});
+  });
+  renderPreviews();
+}
+
+function renderPreviews(){
+  const grid = document.getElementById('previewGrid');
+  const count = document.getElementById('previewCount');
+  grid.innerHTML = '';
+  if(images.length>0){
+    count.style.display='block';
+    count.textContent = images.length + ' CAPTURA' + (images.length>1?'S':'') + ' CARGADA' + (images.length>1?'S':'');
+    images.forEach((img,i)=>{
+      const wrap = document.createElement('div');
+      wrap.className='preview-wrap';
+      wrap.innerHTML = `<img src="${img.url}" class="preview-img"/><button class="preview-del" onclick="removeImg(${i})">×</button>`;
+      grid.appendChild(wrap);
+    });
+    document.getElementById('genBtn').disabled = false;
+  } else {
+    count.style.display='none';
+    document.getElementById('genBtn').disabled = true;
+  }
+}
+
+function removeImg(i){
+  images.splice(i,1);
+  renderPreviews();
+}
+
+function toBase64(file){
+  return new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload=()=>res(r.result.split(',')[1]);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+async function generateScript(){
+  if(!images.length){showError('Agrega al menos una captura.');return;}
+  document.getElementById('errorBox').style.display='none';
+  document.getElementById('genBtn').disabled=true;
+  document.getElementById('genBtn').textContent='⏳ ANALIZANDO IMÁGENES...';
+  document.getElementById('loadingBar').style.display='block';
+
+  try{
+    const content=[];
+    for(const img of images){
+      const b64 = await toBase64(img.file);
+      const mime = img.file.type||'image/jpeg';
+      content.push({type:'image',source:{type:'base64',media_type:mime,data:b64}});
+    }
+    content.push({type:'text',text:PROMPTS[currentType]});
+
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content}],
+      }),
+    });
+    const data = await res.json();
+    const text = (data.content||[]).map(b=>b.text||'').join('');
+    currentScript = text;
+    document.getElementById('scriptBox').textContent = text;
+    goStep(3);
+  } catch(e){
+    showError('Error al procesar. Verifica tu conexión e intenta de nuevo.');
+  }
+
+  document.getElementById('genBtn').disabled=false;
+  document.getElementById('genBtn').textContent='⚡ GENERAR SCRIPT';
+  document.getElementById('loadingBar').style.display='none';
+}
+
+function showError(msg){
+  const box = document.getElementById('errorBox');
+  box.textContent='⚠️ '+msg;
+  box.style.display='block';
+}
+
+function sendWhatsApp(){
+  const encoded = encodeURIComponent(currentScript);
+  window.open('https://wa.me/?text='+encoded,'_blank');
+}
+
+function copyScript(){
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(currentScript).then(()=>showToast('✓ COPIADO'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value=currentScript;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✓ COPIADO');
+  }
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+function reset(){
+  currentType=null;images=[];currentScript='';
+  document.getElementById('previewGrid').innerHTML='';
+  document.getElementById('previewCount').style.display='none';
+  document.getElementById('errorBox').style.display='none';
+  document.getElementById('genBtn').disabled=true;
+  document.getElementById('fileInput').value='';
+  document.getElementById('camInput').value='';
+  goStep(1);
+}
+
+// Service Worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
